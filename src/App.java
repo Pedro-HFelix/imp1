@@ -126,10 +126,10 @@ class FileGraph {
 }
 
 /**
- * Original code is available on
+ * Código original disponível em:
  * https://algs4.cs.princeton.edu/13stacks/Bag.java.html
  * Lista encadeada para armazenamento dos itens
- * 
+ * Mudanças foram feitas para se adequar ao contexto do uso
  * @author Robert Sedgewick
  * @author Kevin Wayne
  *
@@ -203,7 +203,7 @@ class Bag<T extends Comparable<T>> implements Iterable<T> {
 /**
  * Mudanças foram feitas para se adequar ao contexto do uso
  * 
- * Código original disponível em
+ * Código original disponível em:
  * https://algs4.cs.princeton.edu/42digraph/Digraph.java.html
  * 
  * @author Robert Sedgewick
