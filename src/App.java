@@ -1,3 +1,5 @@
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -212,26 +214,16 @@ class Bag<T extends Comparable<T>> implements Iterable<T> {
 }
 
 enum EdgeType {
-    TREE("ARVORE"),
-    BACK("RETORNO"),
-    FORWARD("AVANCO"),
-    CROSS("CRUZAMENTO");
-
-    private final String description;
-
-    EdgeType(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return description;
-    }
+    ARVORE,
+    RETORNO,
+    AVANCO,
+    CRUZAMENTO;
 }
 
 record Edge(int from, int to, EdgeType type) {
     @Override
     public String toString() {
-        return type.getDescription() + " = { " + from + " , " + to + " }";
+        return type + " = { " + from + " , " + to + " }";
     }
 }
 
@@ -252,6 +244,8 @@ class Digraph {
     private int E; // número de arestas do grafo
     private Bag<Integer>[] adj; // lista de adjacência para cada vértice V
     private int[] indegree; // grau de entrada de cada vértice V
+
+    boolean debug = false;
 
     Integer T = 0;
     Integer[] TD;
@@ -397,15 +391,16 @@ class Digraph {
 
         for (int i = 1; i <= V; i++) {
             if (TD[i] == 0) {
-                DeepSearchRec(i);
+                // DeepSearchRec(i);
+                iterativeDeepSearch(i);
             }
         }
 
-        edges.forEach(e -> System.out.println(e));
+        // edges.forEach(e -> System.out.println(e));
 
         System.out.println("\n--- Arestas de árvore encontradas ---");
         for (Edge e : edges) {
-            if (e.type() == EdgeType.TREE) {
+            if (e.type() == EdgeType.ARVORE) {
                 System.out.println(e);
             }
         }
@@ -417,36 +412,37 @@ class Digraph {
             }
         }
 
-        System.out.println("\n--- Tabela ---");
+        if (debug) {
+            System.out.println("\n--- Tabela ---");
 
-        System.out.printf("%-6s", "V");
-        for (int i = 1; i <= V; i++) {
-            System.out.printf("%-6d", i);
-        }
-        System.out.println();
-
-        System.out.printf("%-6s", "TD");
-        for (int i = 1; i <= V; i++) {
-            System.out.printf("%-6d", TD[i]);
-        }
-        System.out.println();
-
-        System.out.printf("%-6s", "TT");
-        for (int i = 1; i <= V; i++) {
-            System.out.printf("%-6d", TT[i]);
-        }
-        System.out.println();
-
-        System.out.printf("%-6s", "PAI");
-        for (int i = 1; i <= V; i++) {
-            if (PAI[i] == 0) {
-                System.out.printf("%-6s", "∅");
-            } else {
-                System.out.printf("%-6d", PAI[i]);
+            System.out.printf("%-6s", "V");
+            for (int i = 1; i <= V; i++) {
+                System.out.printf("%-6d", i);
             }
-        }
-        System.out.println();
+            System.out.println();
 
+            System.out.printf("%-6s", "TD");
+            for (int i = 1; i <= V; i++) {
+                System.out.printf("%-6d", TD[i]);
+            }
+            System.out.println();
+
+            System.out.printf("%-6s", "TT");
+            for (int i = 1; i <= V; i++) {
+                System.out.printf("%-6d", TT[i]);
+            }
+            System.out.println();
+
+            System.out.printf("%-6s", "PAI");
+            for (int i = 1; i <= V; i++) {
+                if (PAI[i] == 0) {
+                    System.out.printf("%-6s", "∅");
+                } else {
+                    System.out.printf("%-6d", PAI[i]);
+                }
+            }
+            System.out.println();
+        }
     }
 
     private void DeepSearchRec(int v) {
@@ -455,20 +451,67 @@ class Digraph {
 
         for (int w : adj(v)) {
             if (TD[w] == 0) {
-                edges.add(new Edge(v, w, EdgeType.TREE));
+                edges.add(new Edge(v, w, EdgeType.ARVORE));
                 PAI[w] = v;
                 DeepSearchRec(w);
             } else if (TT[w] == 0) {
-                edges.add(new Edge(v, w, EdgeType.BACK));
+                edges.add(new Edge(v, w, EdgeType.RETORNO));
             } else if (TD[v] < TD[w]) {
-                edges.add(new Edge(v, w, EdgeType.FORWARD));
+                edges.add(new Edge(v, w, EdgeType.AVANCO));
             } else {
-                edges.add(new Edge(v, w, EdgeType.CROSS));
+                edges.add(new Edge(v, w, EdgeType.CRUZAMENTO));
             }
         }
 
         T++;
         TT[v] = T;
+    }
+
+    private void iterativeDeepSearch(int startNode) {
+        Deque<Integer> stack = new ArrayDeque<>();
+        stack.push(startNode);
+
+        T++;
+        TD[startNode] = T;
+
+        Iterator<Integer>[] iterators = new Iterator[V + 1];
+        iterators[startNode] = adj(startNode).iterator();
+
+        while (!stack.isEmpty()) {
+            int v = stack.peek();
+
+            if (iterators[v].hasNext()) {
+                int w = iterators[v].next();
+
+                if (TD[w] == 0) {
+                    edges.add(new Edge(v, w, EdgeType.ARVORE));
+                    PAI[w] = v;
+                    T++;
+                    TD[w] = T;
+
+                    stack.push(w);
+                    iterators[w] = adj(w).iterator();
+
+                } else if (TT[w] == 0) {
+
+                    if (PAI[v] != w) {
+                        edges.add(new Edge(v, w, EdgeType.RETORNO));
+                    }
+
+                } else {
+                    if (TD[v] < TD[w]) {
+                        edges.add(new Edge(v, w, EdgeType.AVANCO));
+                    } else {
+                        edges.add(new Edge(v, w, EdgeType.CRUZAMENTO));
+                    }
+                }
+            } else {
+
+                T++;
+                TT[v] = T;
+                stack.pop();
+            }
+        }
     }
 
     public String toString() {
