@@ -417,31 +417,26 @@ class Digraph {
             }
         }
 
-        // Imprime tabela no formato pedido
         System.out.println("\n--- Tabela ---");
 
-        // Cabeçalho
         System.out.printf("%-6s", "V");
         for (int i = 1; i <= V; i++) {
             System.out.printf("%-6d", i);
         }
         System.out.println();
 
-        // Linha TD
         System.out.printf("%-6s", "TD");
         for (int i = 1; i <= V; i++) {
             System.out.printf("%-6d", TD[i]);
         }
         System.out.println();
 
-        // Linha TT
         System.out.printf("%-6s", "TT");
         for (int i = 1; i <= V; i++) {
             System.out.printf("%-6d", TT[i]);
         }
         System.out.println();
 
-        // Linha PAI
         System.out.printf("%-6s", "PAI");
         for (int i = 1; i <= V; i++) {
             if (PAI[i] == 0) {
@@ -478,46 +473,6 @@ class Digraph {
 
     public String toString() {
         StringBuilder s = new StringBuilder();
-        s.append(V + " vértices, " + E + " arestas " + NEWLINE);
-        for (int v = 1; v <= V; v++) {
-            s.append(String.format("%d: ", v));
-            for (int w : adj[v]) {
-                s.append(String.format("%d ", w));
-            }
-            s.append(NEWLINE);
-        }
-        return s.toString();
-    }
-
-}
-
-public class App {
-    public static void main(String[] args) throws Exception {
-
-        Digraph G = Menu.init();
-
-        Menu.RunDeepSeach(G);
-
-        s.append(V + " vértices, " + E + " arestas " + NEWLINE);
-        for (int v = 1; v <= V; v++) {
-            s.append(String.format("%d: ", v));
-            for (int w : adj[v]) {
-                s.append(String.format("%d ", w));
-            }
-            s.append(NEWLINE);
-        }
-        return s.toString();
-    }
-
-}
-
-public class App {
-    public static void main(String[] args) throws Exception {
-
-        Digraph G = Menu.init();
-
-        Menu.RunDeepSeach(G);
-
         s.append(V + " vértices, " + E + " arestas " + NEWLINE);
         for (int v = 1; v <= V; v++) {
             s.append(String.format("%d: ", v));
