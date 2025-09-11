@@ -130,6 +130,7 @@ class FileGraph {
  * https://algs4.cs.princeton.edu/13stacks/Bag.java.html
  * Lista encadeada para armazenamento dos itens
  * Mudanças foram feitas para se adequar ao contexto do uso
+ * 
  * @author Robert Sedgewick
  * @author Kevin Wayne
  *
@@ -211,7 +212,7 @@ class Bag<T extends Comparable<T>> implements Iterable<T> {
  */
 
 class Digraph {
-    private static final String NEWLINE = "; \n";
+    private static final String NEWLINE = ";\n";
 
     private final int V; // número de vértices do grafo
     private int E; // número de arestas do grafo
