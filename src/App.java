@@ -1,6 +1,11 @@
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+
+import javax.management.RuntimeErrorException;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,25 +14,31 @@ class Menu {
 
     private static Scanner sc = new Scanner(System.in);
 
-    public static void Run(Digraph G) {
+    public static void RunVAnality(Digraph G) {
         int v = 0;
 
-        System.out.println("------------------------------------");
-        System.out.println("Para sair digite 0 ou um número menor que 0.");
-        do {
+        System.out.print("Digite o vértice a ser analisado: ");
 
-            System.out.print("Digite o vértice a ser analisado: ");
+        v = sc.nextInt();
 
-            v = sc.nextInt();
+        if (v > 0) {
+            Digraph.vInfo(G, v);
+        }
 
-            if (v > 0) {
-                Digraph.vInfo(G, v);
-            }
+    }
 
-        } while (v > 0);
+    public static void RunDeepSeach(Digraph G) {
+        int v = 0;
 
-        System.out.println("Finalizado");
-        System.out.println("------------------------------------");
+        System.out.print("Digite o vértice a ser analisado: ");
+
+        v = sc.nextInt();
+
+        if (v > 0) {
+            G.DeepSearch(v);
+
+            System.out.println();
+        }
     }
 
     public static Digraph init() {
@@ -126,10 +137,9 @@ class FileGraph {
 }
 
 /**
- * Código original disponível em:
+ * Original code is available on
  * https://algs4.cs.princeton.edu/13stacks/Bag.java.html
  * Lista encadeada para armazenamento dos itens
- * Mudanças foram feitas para se adequar ao contexto do uso
  * 
  * @author Robert Sedgewick
  * @author Kevin Wayne
@@ -201,10 +211,34 @@ class Bag<T extends Comparable<T>> implements Iterable<T> {
     }
 }
 
+enum EdgeType {
+    TREE("ARVORE"),
+    BACK("RETORNO"),
+    FORWARD("AVANCO"),
+    CROSS("CRUZAMENTO");
+
+    private final String description;
+
+    EdgeType(String description) {
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+}
+
+record Edge(int from, int to, EdgeType type) {
+    @Override
+    public String toString() {
+        return type.getDescription() + " = { " + from + " , " + to + " }";
+    }
+}
+
 /**
  * Mudanças foram feitas para se adequar ao contexto do uso
  * 
- * Código original disponível em:
+ * Código original disponível em
  * https://algs4.cs.princeton.edu/42digraph/Digraph.java.html
  * 
  * @author Robert Sedgewick
@@ -212,15 +246,20 @@ class Bag<T extends Comparable<T>> implements Iterable<T> {
  */
 
 class Digraph {
-    private static final String NEWLINE = ";\n";
+    private static final String NEWLINE = "; \n";
 
     private final int V; // número de vértices do grafo
     private int E; // número de arestas do grafo
     private Bag<Integer>[] adj; // lista de adjacência para cada vértice V
     private int[] indegree; // grau de entrada de cada vértice V
 
+    Integer T = 0;
+    Integer[] TD;
+    Integer[] TT;
+    Integer[] PAI;
+    List<Edge> edges;
+
     public Digraph(FileGraph fg) {
-        long start = System.nanoTime();
 
         int[] header = fg.ReadLine();
         if (header == null || header.length < 2) {
@@ -228,7 +267,6 @@ class Digraph {
         }
 
         this.V = header[0];
-        int expectedEdges = header[1];
         this.E = 0;
 
         indegree = new int[V + 1];
@@ -247,15 +285,18 @@ class Digraph {
             addEdge(v, w);
         }
 
-        long elapsed = System.nanoTime() - start;
+        if (this.E != header[1])
+            throw new RuntimeErrorException(null, "Numero de arestas invalido");
 
-        double seconds = elapsed / 1_000_000_000.0;
+        TD = new Integer[this.V + 1];
+        TT = new Integer[this.V + 1];
+        PAI = new Integer[this.V + 1];
+        edges = new LinkedList<>();
 
-        System.out.printf("Tempo de término: %.2f s \n", seconds);
-
-        if (this.E != expectedEdges) {
-            System.out.println("Número de arestas lidas (" + this.E +
-                    ") difere do especificado (" + expectedEdges + ")");
+        for (int i = 1; i <= this.V; i++) {
+            TD[i] = 0;
+            TT[i] = 0;
+            PAI[i] = 0;
         }
     }
 
@@ -352,6 +393,89 @@ class Digraph {
         System.out.println("\n");
     }
 
+    public void DeepSearch(int start) {
+
+        for (int i = 1; i <= V; i++) {
+            if (TD[i] == 0) {
+                DeepSearchRec(i);
+            }
+        }
+
+        edges.forEach(e -> System.out.println(e));
+
+        System.out.println("\n--- Arestas de árvore encontradas ---");
+        for (Edge e : edges) {
+            if (e.type() == EdgeType.TREE) {
+                System.out.println(e);
+            }
+        }
+
+        System.out.println("\n--- Classificação das arestas que saem do vértice " + start + " ---");
+        for (Edge e : edges) {
+            if (e.from() == start) {
+                System.out.println(e);
+            }
+        }
+
+        // Imprime tabela no formato pedido
+        System.out.println("\n--- Tabela ---");
+
+        // Cabeçalho
+        System.out.printf("%-6s", "V");
+        for (int i = 1; i <= V; i++) {
+            System.out.printf("%-6d", i);
+        }
+        System.out.println();
+
+        // Linha TD
+        System.out.printf("%-6s", "TD");
+        for (int i = 1; i <= V; i++) {
+            System.out.printf("%-6d", TD[i]);
+        }
+        System.out.println();
+
+        // Linha TT
+        System.out.printf("%-6s", "TT");
+        for (int i = 1; i <= V; i++) {
+            System.out.printf("%-6d", TT[i]);
+        }
+        System.out.println();
+
+        // Linha PAI
+        System.out.printf("%-6s", "PAI");
+        for (int i = 1; i <= V; i++) {
+            if (PAI[i] == 0) {
+                System.out.printf("%-6s", "∅");
+            } else {
+                System.out.printf("%-6d", PAI[i]);
+            }
+        }
+        System.out.println();
+
+    }
+
+    private void DeepSearchRec(int v) {
+        T++;
+        TD[v] = T;
+
+        for (int w : adj(v)) {
+            if (TD[w] == 0) {
+                edges.add(new Edge(v, w, EdgeType.TREE));
+                PAI[w] = v;
+                DeepSearchRec(w);
+            } else if (TT[w] == 0) {
+                edges.add(new Edge(v, w, EdgeType.BACK));
+            } else if (TD[v] < TD[w]) {
+                edges.add(new Edge(v, w, EdgeType.FORWARD));
+            } else {
+                edges.add(new Edge(v, w, EdgeType.CROSS));
+            }
+        }
+
+        T++;
+        TT[v] = T;
+    }
+
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append(V + " vértices, " + E + " arestas " + NEWLINE);
@@ -372,7 +496,47 @@ public class App {
 
         Digraph G = Menu.init();
 
-        G.toString();
-        Menu.Run(G);
+        Menu.RunDeepSeach(G);
+
+        s.append(V + " vértices, " + E + " arestas " + NEWLINE);
+        for (int v = 1; v <= V; v++) {
+            s.append(String.format("%d: ", v));
+            for (int w : adj[v]) {
+                s.append(String.format("%d ", w));
+            }
+            s.append(NEWLINE);
+        }
+        return s.toString();
+    }
+
+}
+
+public class App {
+    public static void main(String[] args) throws Exception {
+
+        Digraph G = Menu.init();
+
+        Menu.RunDeepSeach(G);
+
+        s.append(V + " vértices, " + E + " arestas " + NEWLINE);
+        for (int v = 1; v <= V; v++) {
+            s.append(String.format("%d: ", v));
+            for (int w : adj[v]) {
+                s.append(String.format("%d ", w));
+            }
+            s.append(NEWLINE);
+        }
+        return s.toString();
+    }
+
+}
+
+public class App {
+    public static void main(String[] args) throws Exception {
+
+        Digraph G = Menu.init();
+
+        Menu.RunDeepSeach(G);
+
     }
 }
