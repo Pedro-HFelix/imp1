@@ -473,10 +473,7 @@ class Digraph {
     private void iterativeDeepSearch(int startNode) {
         Iterator<Integer>[] iterators = new Iterator[V + 1];
 
-        for (int i = 1; i <= V; i++) {
-            iterators[i] = adj(i).iterator();
-        }
-
+        iterators[startNode] = adj(startNode).iterator();
         Stack<Integer> stack = new Stack<Integer>();
         stack.push(startNode);
 
@@ -496,6 +493,7 @@ class Digraph {
                     discovery[w] = T;
 
                     stack.push(w);
+                    iterators[w] = adj(w).iterator();
 
                 } else if (finish[w] == 0) {
                     if (parent[v] != w) {
@@ -510,7 +508,6 @@ class Digraph {
                     }
                 }
             } else {
-
                 T++;
                 finish[v] = T;
                 stack.pop();
