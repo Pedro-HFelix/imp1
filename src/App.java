@@ -254,7 +254,7 @@ class Digraph {
     private Bag<Integer>[] adj;
     private int[] indegree;
 
-    boolean debug = true;
+    boolean debug = false;
 
     Integer T = 0;
     Integer[] discovery;
@@ -398,14 +398,19 @@ class Digraph {
 
     public void DeepSearch(int start) {
 
+        for (int i = 1; i <= this.V; i++) {
+            discovery[i] = 0;
+            finish[i] = 0;
+            parent[i] = 0;
+        }
+
         for (int i = 1; i <= V; i++) {
+
             if (discovery[i] == 0) {
                 // recursiveDeepSearch(i);
                 iterativeDeepSearch(i);
             }
         }
-
-        // edges.forEach(e -> System.out.println(e));
 
         System.out.println("\n--- Arestas de árvore encontradas ---");
         for (Edge e : edges) {
@@ -417,37 +422,33 @@ class Digraph {
         System.out.println("\n--- Classificação das arestas que saem do vértice " + start + " ---");
         for (Edge e : edges) {
             if (e.from() == start) {
-                System.out.println(e.type().getDescription());
+                System.out.println(e);
             }
         }
 
         if (debug) {
             System.out.println("\n--- Table ---");
 
-            int colWidth = 6; // largura fixa para cada coluna
+            int colWidth = 6;
 
-            // Cabeçalho
             System.out.printf("%-" + colWidth + "s", "V");
             for (int i = 1; i <= V; i++) {
                 System.out.printf("%" + colWidth + "d", i);
             }
             System.out.println();
 
-            // Discovery
             System.out.printf("%-" + colWidth + "s", "disc");
             for (int i = 1; i <= V; i++) {
                 System.out.printf("%" + colWidth + "d", discovery[i]);
             }
             System.out.println();
 
-            // Finish
             System.out.printf("%-" + colWidth + "s", "fin");
             for (int i = 1; i <= V; i++) {
                 System.out.printf("%" + colWidth + "d", finish[i]);
             }
             System.out.println();
 
-            // Parent
             System.out.printf("%-" + colWidth + "s", "par");
             for (int i = 1; i <= V; i++) {
                 if (parent[i] == 0) {
