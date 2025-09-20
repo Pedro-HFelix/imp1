@@ -494,13 +494,11 @@ class Digraph {
                     discovery[w] = T;
 
                     stack.push(w);
+
                     iterators[w] = adj(w).iterator();
 
                 } else if (finish[w] == 0) {
-                    if (parent[v] != w) {
-                        edges.add(new Edge(v, w, EdgeType.BACK));
-                    }
-
+                    edges.add(new Edge(v, w, EdgeType.BACK));
                 } else {
                     if (discovery[v] < discovery[w]) {
                         edges.add(new Edge(v, w, EdgeType.FORWARD));
@@ -514,6 +512,7 @@ class Digraph {
                 stack.pop();
             }
         }
+
     }
 
     private void recursiveDeepSearch(int v) {
